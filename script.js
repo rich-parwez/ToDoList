@@ -1,144 +1,134 @@
-// ======================
-// ELEMENT
-// ======================
-
 const inputBar = document.querySelector(".taskbar input");
-const addBtn = document.querySelector(".taskbar button");
+const addForm = document.querySelector(".taskbar");
 const taskContainer = document.querySelector(".tasks");
 const clearBtn = document.querySelector(".clear");
-
-// ======================
-// DATA
-// ======================
+const taskSummary = document.querySelector("#task-summary");
+const progressLabel = document.querySelector("#progress-label");
+const progressBar = document.querySelector(".progress-track");
+const progressFill = document.querySelector(".progress-fill");
+const today = document.querySelector("#today");
 
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
-// ======================
-// EVENT
-// ======================
+today.textContent = new Intl.DateTimeFormat(undefined, {
+  weekday: "long",
+  month: "long",
+  day: "numeric"
+}).format(new Date());
 
-addBtn.addEventListener("click", addTask);
+addForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  addTask();
+});
 
 clearBtn.addEventListener("click", clearTasks);
 
-inputBar.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-        addTask();
-    }
-});
-
-// ======================
-// FUNCTION
-// ======================
-
-// Menambah task
 function addTask() {
+  const title = inputBar.value.trim();
 
-    const title = inputBar.value.trim();
+  if (title === "") return;
 
-    if (title === "") return;
+  tasks.push({
+    id: Date.now(),
+    title,
+    completed: false
+  });
 
-    const task = {
-        id: Date.now(),
-        title: title,
-        completed: false
-    };
-
-    tasks.push(task);
-
-    saveTasks();
-
-    renderTasks();
-
-    inputBar.value = "";
-    inputBar.focus();
+  saveTasks();
+  renderTasks();
+  inputBar.value = "";
+  inputBar.focus();
 }
 
-// Menghapus task
 function deleteTask(id) {
-
-    tasks = tasks.filter(task => task.id !== id);
-
-    saveTasks();
-
-    renderTasks();
+  tasks = tasks.filter((task) => task.id !== id);
+  saveTasks();
+  renderTasks();
 }
 
-// Checklist task
 function toggleTask(id) {
+  tasks = tasks.map((task) => {
+    if (task.id === id) {
+      task.completed = !task.completed;
+    }
 
-    tasks = tasks.map(task => {
+    return task;
+  });
 
-        if (task.id === id) {
-            task.completed = !task.completed;
-        }
-
-        return task;
-
-    });
-
-    saveTasks();
-
-    renderTasks();
+  saveTasks();
+  renderTasks();
 }
 
-// Hapus semua task
 function clearTasks() {
-
-    tasks = [];
-
-    saveTasks();
-
-    renderTasks();
+  tasks = [];
+  saveTasks();
+  renderTasks();
 }
 
-// Simpan ke LocalStorage
 function saveTasks() {
-
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-
+  localStorage.setItem("tasks", JSON.stringify(tasks));
 }
-
-// ======================
-// RENDER
-// ======================
 
 function renderTasks() {
+  taskContainer.replaceChildren();
 
-    taskContainer.innerHTML = "";
+  const completedCount = tasks.filter((task) => task.completed).length;
+  const taskCount = tasks.length;
+  const completion = taskCount === 0 ? 0 : Math.round((completedCount / taskCount) * 100);
+  const taskWord = taskCount === 1 ? "task" : "tasks";
 
-    tasks.forEach(task => {
+  taskSummary.textContent = `${taskCount} ${taskWord}`;
+  progressLabel.textContent = taskCount === 0
+    ? "Ready when you are"
+    : completedCount === taskCount
+      ? "Everything is done — nice work!"
+      : `${completedCount} of ${taskCount} completed`;
+  progressBar.setAttribute("aria-valuenow", String(completion));
+  progressFill.style.width = `${completion}%`;
+  clearBtn.disabled = taskCount === 0;
 
-        const taskElement = document.createElement("div");
+  if (taskCount === 0) {
+    const emptyState = document.createElement("div");
+    emptyState.className = "empty-state";
 
-        taskElement.className = "task";
+    const icon = document.createElement("i");
+    icon.className = "bi bi-check2-circle";
+    icon.setAttribute("aria-hidden", "true");
 
-        taskElement.innerHTML = `
-            <input type="checkbox" ${task.completed ? "checked" : ""}>
-            <span>${task.title}</span>
-            <i class="bi bi-trash3"></i>
-        `;
+    const title = document.createElement("strong");
+    title.textContent = "Your list is clear";
 
-        const checkbox = taskElement.querySelector("input");
+    const message = document.createElement("span");
+    message.textContent = "Add a task to get your day moving.";
 
-        checkbox.addEventListener("change", () => {
-            toggleTask(task.id);
-        });
+    emptyState.append(icon, title, message);
+    taskContainer.appendChild(emptyState);
+    return;
+  }
 
-        const deleteBtn = taskElement.querySelector("i");
+  tasks.forEach((task) => {
+    const taskElement = document.createElement("div");
+    taskElement.className = "task";
 
-        deleteBtn.addEventListener("click", () => {
-            deleteTask(task.id);
-        });
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = task.completed;
+    checkbox.setAttribute("aria-label", `Mark ${task.title} as ${task.completed ? "not completed" : "completed"}`);
+    checkbox.addEventListener("change", () => toggleTask(task.id));
 
-        taskContainer.appendChild(taskElement);
+    const title = document.createElement("span");
+    title.textContent = task.title;
 
-    });
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "delete-task";
+    deleteButton.setAttribute("aria-label", `Delete ${task.title}`);
+    deleteButton.innerHTML = '<i class="bi bi-trash3" aria-hidden="true"></i>';
+    deleteButton.addEventListener("click", () => deleteTask(task.id));
 
+    taskElement.append(checkbox, title, deleteButton);
+    taskContainer.appendChild(taskElement);
+  });
 }
-
-// ======================
-// INIT
-// ======================
 
 renderTasks();

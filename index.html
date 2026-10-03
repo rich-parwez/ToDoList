@@ -3,31 +3,62 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f6fb">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
   <link rel="stylesheet" href="style.css">
-  <title>To-Do-List</title>
+  <title>Tasks — To-do list</title>
 </head>
 
 <body>
-
-  <div class="wrapper">
-    <header class="header">
-      <input type="text" value="New List">
-      <span class="clear">Clear all tasks</span>
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Daylist home">
+        <span class="brand-mark"><i class="bi bi-check2"></i></span>
+        <span>daylist</span>
+      </a>
+      <p class="today" id="today"></p>
     </header>
 
-    <main class="tasks">
-    </main>
+    <section class="todo-card" aria-labelledby="list-title">
+      <div class="card-heading">
+        <div class="eyebrow"><span class="eyebrow-dot"></span> YOUR SPACE</div>
+        <div class="heading-row">
+          <input class="list-title" id="list-title" type="text" value="My tasks" aria-label="List name">
+          <button class="clear" type="button" aria-label="Clear all tasks">
+            <i class="bi bi-trash3" aria-hidden="true"></i>
+            <span>Clear all</span>
+          </button>
+        </div>
+        <p class="subtitle">A little progress each day adds up.</p>
 
-    <footer class="taskbar">
-      <input type="text" placeholder="enter task here">
-      <button>Add</button>
+        <div class="progress-panel">
+          <div class="progress-copy">
+            <span id="task-summary">0 tasks</span>
+            <span id="progress-label">Ready when you are</span>
+          </div>
+          <div class="progress-track" role="progressbar" aria-label="Tasks completed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <span class="progress-fill"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tasks" aria-live="polite"></div>
+
+      <form class="taskbar">
+        <label class="sr-only" for="task-input">Add a task</label>
+        <span class="add-icon" aria-hidden="true"><i class="bi bi-plus-lg"></i></span>
+        <input id="task-input" type="text" placeholder="What needs to get done?" autocomplete="off">
+        <button type="submit">Add task <i class="bi bi-arrow-up-right" aria-hidden="true"></i></button>
+      </form>
+    </section>
+
+    <footer class="page-footer">
+      <!-- <i class="bi bi-stars" aria-hidden="true"></i> -->
+      <span>Keep your focus on what matters.</span>
     </footer>
-  </div>
+  </main>
   <script src="script.js"></script>
-
 </body>
 
 </html>
